@@ -8,6 +8,7 @@
 > - **source venv/Scripts/activate** : 가상환경 활성화
 > - **deactivate** : 가상환경 비활성화
 > - **pip list** : 설치된 항목들을 보여줌 (venv 환경에서 보여지는 게 다름)
+> - **pip install django==3.2.12** : 장고 설치
 > - **django-admin startproject mypjt . ** : 현재 위치에서 mypjt라는 이름의 프로젝트를 생성해준다.
 > - **python manage.py startapp articles** : articles라는 이름의 앱을 생성한다. (생성 후에 settings.py에 앱 등록하기)
 > - **python manage.py runserver** : 서버를 켠다.
