@@ -9,7 +9,7 @@
 > - **deactivate** : 가상환경 비활성화
 > - **pip list** : 설치된 항목들을 보여줌 (venv 환경에서 보여지는 게 다름)
 > - **pip install django==3.2.12** : 장고 설치
-> - **pip install -3 requirements.txt** : 'requirements.txt' 문서 내의 설치 목록을 모두 설치
+> - **pip install -r requirements.txt** : 'requirements.txt' 문서 내의 설치 목록을 모두 설치
 > - **pip freeze > requirements.txt** : 현재 설치된 항목들을 'requirements.txt'라는 이름의 문서로 만든다.
 > - **django-admin startproject mypjt . ** : 현재 위치에서 mypjt라는 이름의 프로젝트를 생성해준다.
 > - **python manage.py startapp articles** : articles라는 이름의 앱을 생성한다. (생성 후에 settings.py에 앱 등록하기)

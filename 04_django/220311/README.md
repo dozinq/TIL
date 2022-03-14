@@ -1,50 +1,25 @@
-## < Django 02 >
+## < git >
+
+> **git branch** : 브랜치 목록 확인
+>
+> **git branch 브랜치 이름** : 새로운 브랜치 생성
+>
+> **git branch -d 브랜치 이름** : 특정 브랜치 삭제(병합된 브랜치만 삭제)
+>
+> **git branch -D 브랜치 이름** : 강제 삭제
+>
+> **git switch 브랜치 이름** : 다른 브랜치로 이동
+>
+> **git switch -c 브랜치 이름** : 브랜치를 새로 생성과 동시에 이동
 
 ---
 
-### Django Model
+## <merge(병합)>
 
-- **Model**
-  - 단일한 데이터에 대한 정보를 가진다.
-    - 사용자에 대한 정보 포함
-- **Database(DB)** : 체계적으로 데이터를 저장한다.
-  - 구조 : 스키마(Schema), 테이블(Table)
-    - Schema : 자료의 구조, 표현방법, 관계 등을 정의한 구조(structure)
-    - Table
-      - column : 필드 or 속성
-      - row : 레코드 or 값
-- **Query** : 데이터를 조회하기 위한 명령어
-  - 조건에 맞는 데이터를 추출하거나 조작한다. (Create, Read, Update, Delete)
-  - "Query를 날린다." -> DB를 조작한다.
-  - SQL(Structured Query Language)
-- **ORM (Object-Relational-Mapping)**
-  - DB를 객체로 조작하기 위해 ORM을 사용한다.
-  - *장점 :* *SQL을 잘 알지 못해도 DB조작이 가능하다.*
-  - ~~단점 : ORM 만으로 완전한 서비스를 구현하기 어려운 경우가 있음.~~
-- **Migrations** : (python manage.py ~ 로 명령한다.)
-  - makemigrations : 마이그레이션(설계도)을 만드는 역할을 수행하는 명령어
-  - migrate : 마이그레이션을 실제 DB에 반영하는 과정
-  - sqlmigrate : sql 명령어
-  - showmigrations : DB반영여부 확인
-- 순서
-  1) models.py 테이블/속성 정의
-  2) makemigrations : 설계도 만들기 (DB반영 안 된 상태)
-  3) migrate : DB반영시키기
-  4) 1. sqlmigrate : sql 명령어
-     2. showmigrations : DB반영여부 확인
+> **git merge 병합할 브랜치 이름** : merge 하기 전에 일단 다른 브랜치를 합치려고 하는, 즉 메인 브랜치로 switch해야 한다.
 
----
-
-### Database API
-
-- **DB API** : DB를 조작하기 위한 도구
-
-- **Django shell** : 
-
-- 실행 순서
-
-  1) **pip install ipython django-extensions** : More powerful interactive shell을 위한 2가지 라이브러리 설치
-
-  2) settings.py에 **'django_extensions'** 기입
-
-  3) **python manage.py shell_plus** 명령
+- fast-forward
+- 3-way merge(merge commit)
+- merge conflict
+  - merge하는 두 브랜치에서 같은 파일의 같은 부분을 동시에 수정하고 merge하면, git은 해당 부분을 자동으로 merge 해주지 못한다.
+  - 반면에, 동일 파일이더라도 서로 다른 부분을 수정했다면 conflict없이 자동으로 merge commit 된다.
