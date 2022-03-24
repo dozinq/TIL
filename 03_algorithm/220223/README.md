@@ -1,7 +1,26 @@
-- **DP (Dynamic Programming)** : ~~
-  - dd
+- **DP (Dynamic Programming)** :  최적화 문제를 해결하는 알고리즘
 
+  - 입력 크기가 작은 부분 문제들을 모두 해결한 후에, 그 해들을 이용하여 보다 큰 크기의 부분 문제들을 해결하여, 최종적으로 원래 주어진 입력의 문제를 해결하는 알고리즘
 
+  1. 문제를 부분 문제로 분할한다.
+     - Fibonacci(n) 함수는 Fibonacci(n-1)과 Fibonacci(n-2)의 합
+     - Fibonacci(n-1)은 Fibonacci(n-2)와 Fibonacci(n-3)의 합
+     - Fibonacci(2)는 Fibonacci(1)과 Fibonacci(0)의 합
+     - Fibonacci(n)은 Fibonacci(n-1), Fibonacci(n-2), ... Fibonacci(2), Fibonacci(1), Fibonacci(0)의 부분집합으로 나뉜다.
+  2. 가장 작은 부분 문제부터 해를 구한다.
+  3. 그 결과는 테이블에 저장하고, 테이블에 저장된 부분 문제의 해를 이용하여 상위 문제의 해를 구한다.
+
+  ```python
+  def fibo_DP(n):
+      f : [0, 1]
+          
+      for i in range(2, n+1):
+          f.append(f[i-1] + f[i-2])
+          
+      return f[n]
+  ```
+
+  
 
 ---
 
