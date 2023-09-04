@@ -305,7 +305,147 @@
    - 저장점(SAVEPOINT) : 저장점 기능
    - 잠금(LOCKING) : 다른 트랜잭션이 동시에 접근하지 못하도록 제한
 
+- 트랜잭션 대상이 되는 SQL
+  1. UPDATE, INSERT, DELETE 등 데이터를 수정하는 DML 문
+  2. SELECT FOR UPDATE 등 배타적 LOCK을 요구하는 SELECT 문
 
+5. COMMIT - 입력/수정/삭제한 자료가 문제가 없을 경우 변경 사항 적용
+
+   ```sql
+   /* Oracle SQL */
+   UPDATE PLAYER SET HEIGHT = 100;
+   COMMIT;
+   /* SQL */
+   UPDATE PLAYER SET HEIGHT = 100;
+   ```
+
+   1. COMMIT 이전 상태
+      - 단지 Memory Buffer에만 영향을 주고, 이전 상태로 복구 가능
+      - 현재 사용자는 SELECT 문으로 변경 결과를 확인 가능
+      - 다른 사용자는 현재 사용자가 수행한 결과의 확인 불가능
+      - 변경된 행은 아직 잠금(Locking) 설정되어 다른 사용자가 변경 불가능
+   2. COMMIT 이후 상태
+      - 데이터에 대한 변경사항을 데이터베이스에 영구반영
+      - 이전 데이터는 영원히 잃어버림
+      - 모든 사용자가 결과 조회 가능
+      - 변경된 행은 잠금이 해제되어 다른 사용자가 변경 가능
+
+   - Auto COMMIT
+     - [Oracle] 임의로 COMMIT 혹은 ROLLBACK을 수행해 주어야 트랜잭션이 종료
+     - [SQL Server] 기본적으로 Auto COMMIT 모드, DML 구문이 성공이면 자동으로 COMMIT이 되고 오류가 발생할 경우 자동으로 ROLLBACK 처리
+
+6. ROLLBACK - COMMIT 이전으로 되돌림
+
+   ```sql
+   /* Oracle SQL */
+   UPDATE PLAYER SET HEIGHT = 100;
+   ROLLBACK;
+   /* SQL */
+   BEGIN TRAN UPDATE PLAYER SET HEIGHT = 100;
+   ROLLBACK;
+   ```
+
+   - 테이블에 입력/수정/삭제한 데이터에 대해 COMMIT 이전의 변경사항을 취소
+   - 이전 데이터가 다시 재저장됨
+   - 관련 행에 대한 잠금이 풀리고, 다른 사용자들이 데이터 변경 가능
+
+7. COMMIT과 ROLLBACK을 사용함으로써 얻을 수 있는 효과
+
+   - 데이터 무결성 보장
+   - 영구적인 변경을 하기 전에, 데이터의 변경 사항을 확인 가능
+   - 논리적으로 연관된 작업을 그룹핑하여 처리 가능
+
+8. SAVEPOINT - 저장점, 데이터 변경을 사전에 지정한 저장점까지만 롤백
+
+   ```sql
+   /* Oracle */
+   SAVEPOINT 포인트이름;
+   -> ROLLBACK TO 포인트이름;
+   /* SQL Server */
+   SAVE TRANSACTION 포인트이름;
+   -> ROLLBACK TRANSACTION 포인트이름;
+   ```
+
+   - 저장점을 정의하면 롤백을 할 경우 전체 롤백이 아닌 저장점까지의 일부만 롤백
+   - SAVEPOINT는 여러 개 지정할 수 있음
+   - 동일 이름으로 저장점 지정 시 가장 나중에 정의한 저장점이 유효
+   - point1으로 되돌리고 나면 그보다 미래 시점인 point2로는 되돌릴 수 없다.
+   - 저장점 없이 롤백하면 모든 변경사항을 취소
+
+
+
+#### 5. WHERE 절
+
+1. WHERE
+
+   - 자신이 원하는 자료만을 검색하기 위해 이용
+   - WHERE 절에 조건이 없는 FTS(Full Table Scan) 문장은 SQL 튜닝 1차 검토 대상
+
+   ```sql
+   SELECT [DISTINCT/ALL] 컬럼명 [ALIAS명] FROM 테이블명 WHERE 조건식;
+   SELECT PLAYER_NAME FROM PLAYER WHERE TEAM_ID = 'K02';
+   SELECT PLAYER_NAME, POSITION, BACK_NO, HEIGHT FROM PLAYER WHERE HEIGHT >= 170;
+   ```
+
+2. WHERE 연산자의 종류
+   - 처리 순서 : 부정 연산자 -> 비교 연산자 -> 논리 연산자
+
+3. IS NULL / IS NOT NULL
+   - IS NOT NULL : NULL이 아닌 경우를 찾기 위해 사용
+     - NULL과 모든 사칙연산의 결과는 NULL이다.
+
+4. ROWNUM / TOP - 행의 개수를 제한
+
+   1. ROWNUM (Oracle)
+
+      - Oracle의 ROWNUM은 칼럼과 비슷한 성격의 Pseudo Column
+      - SQL 처리 결과 집합의 각 행에 대해 임시로 부여되는 일련번호
+      - 테이블/집합에서 원하는 만큼의 행만 가져올 때, WHERE 절에서 행의 개수를 제한
+      - 2건 이상부터는 = 사용 불가
+
+      ```sql
+      /* "MY TABLE"이라는 테이블의 첫번째 칼럼을 "고유한 키값" 혹은 "인덱스 값"으로 설정하라. */
+      UPDATE MY_TABLE SET COLUMN1 = ROWNUM;
+      /* "PLAYER"테이블에서 PLAYER_NAME 번호가 3 이하인 선수 이름을 출력하라. */
+      SELECT PLAYER_NAME FROM PLAYER WHERE ROWNUM <= 3;
+      ```
+
+   2. TOP (SQL Server)
+
+      - SQL Server는 TOP 절을 사용하여 결과 집합으로 출력되는 행의 수를 제한
+      - TOP (Expression) [PERCENT] [WITH TIES];
+        - Expression : 반환할 행의 수를 지정
+        - PERCENT : 쿼리 결과 집합에서 처음 Expression%의 행만 반환됨을 나타냄
+        - WITH TIES : ORDER BY 절이 지정된 경우만 사용 가능
+
+      ```sql
+      /* "PLAYER" 테이블에서 1~5행까지의 PLAYER_NAME을 출력하라. */
+      SELECT TOP(5) PLAYER_NAME FROM PLAYER;
+      ```
+
+
+
+#### 6. 함수
+
+1. 내장함수 - SQL을 더욱 강력하게 해주고 데이터 값을 간편 조작하는데 사용
+
+   - 벤더에서 제공하는 함수인 내장 함수 (Built-in Function)
+   - 사용자가 정의할 수 있는 함수 (User Defined Function)
+   - SQL을 더욱 강력하게 해주고 데이터 값을 간편하게 조작하는데 사용
+   - 핵심적인 기능들은 이름/표기법이 달라도 대부분의 데이터베이스가 공통적으로 제공
+   - 내장함수는 다시 함수의 입력 값에 따라 단일행 함수 / 다중행 함수
+     - **단일행 함수** : 단일 행 내에 있는 하나의 값 또는 여러 값이 입력 인수로 사용
+     - **다중행 함수** : 여러 레코드의 값들을 입력 인수로 사용
+   - 함수는 **입력값이 아무리 많아도 출력값은 하나라는 M:1 관계**라는 중요한 특징을 가짐
+
+   ```markdown
+   *낯선 함수들 정리*
+   1. 
+   ```
+
+   
+
+   
 
 
 
