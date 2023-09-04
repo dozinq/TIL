@@ -71,13 +71,251 @@
            - 날짜와 시각 정보 (Oracle은 DATE로 표현, SQL Server는 DATETIME으로 표현)
            - Oracle은 1초 단위, SQL Server는 3.33ms(millisecond) 단위 관리
 
-   2. CREATE TABLE
+2. CREATE TABLE
+
+   ```sql
+   CREATE TABLE 테이블 이름
+   (칼럼명 DATATYPE [DEFAULT 형식],
+   칼럼명 DATATYPE [DEFAULT 형식],
+   칼럼명 DATATYPE [DEFAULT 형식] );
+   ```
+
+   - 명명 규칙 : 알파벳 -> 숫자 -> _(언더바) -> $ -> #
+   - 테이블 생성시 대/소문자 구분 X
+   - DATETIME 데이터 유형에는 크기 지정 X
+   - 문자 데이터 유형은 반드시 가질 수 있는 최대 길이를 표시
+   - 칼럼과 칼럼의 구분은 콤마로 하되, 마지막 칼럼은 콤마 X
+   - 칼럼에 대한 제약조건이 있으면 CONSTRAINT를 이용하여 추가
+
+3. 제약조건 (CONSTRAINT) - 데이터 무결성 유지 방법, 사용자가 원하는 조건의 데이터만 유지
+
+   - PK (Primary Key) : 한 테이블에 하나만 지정 가능 -> 자동으로 unique 인덱스 생성, null 입력 불가 (기본키 제약 = 고유키 & not null 제약)
+   - UNIQUE : NULL 가능, 행을 고유하게 식별하기 위한 고유키
+   - NOT NULL : NULL 값 입력 금지
+   - CHECK : 데이터 무결성을 유지하기 위한 테이블의 특정 칼럼에 설정하는 제약, 입력할 수 있는 값의 범위 등을 제한, TRUE or FALSE 논리식을 지정
+   - FK (Foreign Key) : 참조 무결성 옵션 선택 가능, 여러개 가능
+   - NULL : 아직 정의되지 않은 값, 데이터 입력하지 못하는 경우, 0과 공백은 NULL이 아님
+
+4. 생성된 테이블 구조 확인
+
+   ```sql
+   /* Oracle */
+   DESCRIBE 테이블명;
+   DESC 테이블명;
+   /* SQL Server */
+   sp_help 'dbo.테이블명'
+   ```
+
+5. SELECT 문장을 통한 테이블 생성 사례
+
+   1. CREATE TABLE AS (CTAS)
 
       ```sql
-      CREATE TABLE 테이블 이름
-      (칼럼명 DATATYPE [DEFAULT 형식],
-      칼럼명 DATATYPE [DEFAULT 형식],
-      칼럼명 DATATYPE [DEFAULT 형식] );
+      /* ORACLE */
+      CREATE TABLE 테이블명B AS SELECT * FROM 테이블명A;
       ```
 
-      
+      - CREATE TABLE AS 문장을 사용하는 경우 테이블의 구조를 복사하므로 따로 작성 X
+      - 기존 테이블 제약조건 중 **NOT NULL 제약 조건만 새로운 테이블에 복제됨**
+      - 다른 제약조건(기본키, 고유키, 외래키, CHECK 등)은 복사가 되지 않아서 다시 적용해야 한다.
+      - 계약 조건 추가하기 위해 ALTER TABLE 기능 사용
+
+   2. SQL Server에서는 Select ~ into ~ 를 활용하여 같은 결과
+
+      ```sql
+      /* SQL Server */
+      SELECT * INTO 테이블명B FROM 테이블명A;
+      ```
+
+6. ALTER TABLE - 칼럼을 추가/삭제하거나 제약조건을 추가/삭제
+
+   ```sql
+   /* 추가 */
+   ALTER TABLE 테이블이름 ADD 속성_이름 데이터타입 [DEFAULT];
+   ALTER TABLE PLAYER ADD ADDRESS VARCHAR(80);
+   /* 속성명 변경 */
+   ALTER TABLE 테이블이름 ALTER 속성_이름 [SET DEFAULT];
+   ALTER TABLE TEAM_TEMP ALTER COLUMN ORIG_YYYY VARCHAR(8) NOT NULL;
+   /* 속성 삭제 */
+   ALTER TABLE 테이블이름 DROP 속성_이름 [CASCADE | RESTRICT];
+   ALTER TABLE PLAYER DROP COLUMN ADDRESS;
+   ```
+
+   1. ALTER TABLE + ADD COLUMN : 칼럼 추가
+   2. ALTER TABLE + DROP COLUMN : 칼럼 삭제
+   3. ALTER TABLE + MODIFY : 칼럼 속성 변경
+   4. ALTER TABLE + RENAME COLUMN A TO B : 컬럼명 변경
+   5. ALTER TABLE + ADD CONSTRAINT : 제약조건 추가
+   6. ALTER TABLE + DROP CONSTRAINT : 제약조건 삭제
+
+   - ALTER TABLE 칼럼 변경 시 주의사항
+
+     - 칼럼의 크기를 늘릴 수는 있지만 줄이는 건 X
+     - null만 있거나 행이 없는 경우에만 칼럼 폭 줄이기 가능
+     - null이 있을때는 데이터 유형(숫자, 문자) 변경 가능
+     - null이 없으면 not null 제약조건 추가 가능
+     - 기본값(DEFAULT) 변경 작업 이후 발생하는 행 삽입에 대해서만 기본값 변경
+
+   - PK 제약조건 생성하는 DDL
+
+     ```sql
+     /* 1 */
+     CREATE TABLE 테이블명
+     (칼럼1 VARCHAR2(10) PRIMARY KEY, 칼럼2 VARCHAR2(200) NOT NULL);
+     /* 2 */
+     CREATE TABLE 테이블명
+     (칼럼1 VARCHAR2(10) NOT NULL, 칼럼2 VARCHAR2(200) NOT NULL, CONSTRAINT constraint_name PRIMARY KEY (칼럼1));
+     /* 3 */
+     ALTER TABLE
+     테이블명 ADD CONSTRAINT constraint_name PRIMARY KEY (col_1, col_2, ...)
+     ```
+
+   - 외래키(FK) 참고사항
+     - 테이블 생성 시 설정할 수 있다.
+     - 외래키는 NULL 값 가질 수 있다.
+     - 한 테이블에 여러 개 존재 가능하다.
+     - 참조 무결성 제약을 받는다.
+
+7. DROP TABLE - 테이블 제거
+
+   ```sql
+   ALTER TABLE 테이블명 DROP COLUMN 삭제할 컬럼명;
+   /* 테이블 전부 삭제, 회복 불가 */
+   DROP TABLE PLAYER;
+   /* 테이블의 일부 칼럼 삭제, 회복 불가 */
+   ALTER TABLE PLAYER DROP COLUMN ADDRESS;
+   ```
+
+   - DROP 명령어를 사용하면 테이블의 모든 데이터 및 구조를 삭제
+   - CASCADE CONSTRAINT 옵션은 해당 테이블과 관계가 있었던 참조되는 제약조건에 대해서도 삭제한다는 것을 의미
+   - SQL Server에서는 CASCADE 옵션이 존재하지 않으며, 테이블을 삭제하기 전에 참조하는 FK 제약 조건 또는 참조하는 테이블을 먼저 삭제
+
+8. TRUNCATE TABLE - 테이블 비우기
+
+   ```sql
+   TRUNCATE TABLE 테이블명 DROP COLUMN 삭제할 컬럼명;
+   ```
+
+   - 테이블 삭제가 아닌 해당 테이블의 모든 행 제거 후 저장공간을 재사용하도록 한다.
+
+9. DDL과 DML의 삭제
+
+   - DDL은 반드시 AUTO COMMIT이 일어남 -> DROP, TRUNCATE 원상복구 불가
+   - DML은 사용자가 COMMIT 해야함 -> DELETE 테이블 삭제해도 ROLLBACK으로 복구 가능
+
+10. 참조 동작
+
+    - Automatic : 자식 삽입 시 부모 테이블에 pk가 없으면 부모 pk 생성 후 자식에 삽입
+    - Dependent : 자식 삽입 시 부모 테이블에 pk가 존재할 때만 자식 삽입 허용
+    - Cascade : 부모 삭제 시 자식 같이 삭제
+    - Restrict : 부모 삭제 시 자식 테이블에 pk가 없는 경우에만 부모 삭제 허용
+
+
+
+#### 3. DML (SELECT, INSERT, UPDATE, DELETE)
+
+1. DML (Data Manipulation Language) : 입력 / 수정 / 삭제/ 조회
+
+   - 호스트 프로그램 속에 삽입되어 사용, 데이터 부속어라고도 함
+   - Procedural DML(절차적 데이터 조작어) : 초급언어, 사용자가 무슨 데이터를 원하고 어떻게 접근해 처리할 것인지 명세해야 한다.
+   - Nonprocedural DML(비절차적 데이터 조작어) : 고급언어, 사용자가 무슨 데이터를 원하는지만 명세하고 어떻게 접근할 것인지는 하지 않는다. 선언적 언어라고도 한다.
+
+2. INSERT - 데이터 입력 방법
+
+   ```sql
+   INSERT INTO 테이블명 (COLUMN_LIST) VALUES (COLUMN_LIST에 넣을 VALUE_LIST);
+   INSERT INTO 테이블명 VALUES (전체 COLUMN에 넣을 VALUE_LIST);
+   
+   PLAYER INSERT INTO PLAYER
+   (PLAYER_ID, PLAYER_NAME, TEAM_ID, POSITION, HEIGHT, WEIGHT, BACK_NO)
+   VALUES ('200207', '박지성', 'K07', 'MF', 178, 73, 7);
+   ```
+
+   - INSERT INTO 테이블명 (칼럼리스트 / 생략 = 전체칼럼)
+
+     VALUES (컬럼명 순서에 맞춰 입력할 값 매핑해서 작성);
+
+   - 데이터가 문자형일 경우 ''로 묶어서 입력
+
+3. UPDATE - 정보 수정
+
+   ```sql
+   UPDATE 테이블명 SET 수정되어야 할 칼럼명 = 수정되기를 원하는 새로운 값;
+   UPDATE PLAYER SET BACK_NO = 99;
+   UPDATE PLAYER SET POSITION = 'MF';
+   ```
+
+   - UPDATE 테이블명 SET 칼럼명 = 값 WHERE 조건;
+
+4. DELETE - 삭제
+
+   ```sql
+   DELETE FROM 삭제를 원하는 정보가 들어있는 테이블명 WHERE 조건절;
+   DELETE FROM PLAYER;
+   ```
+
+   - DELETE FROM 테이블명 WHERE 조건;
+   - FROM 문구는 생략이 가능
+   - WHERE 절을 사용하지 않는다면 테이블의 전체 데이터 삭제
+
+5. SELECT - 데이터 조회
+
+   ```sql
+   SELECT 칼럼명 FROM 테이블;
+   SELECT PLAYER_ID, PLAYER_NAME, TEAM_ID, POSITION FROM PLAYER;
+   SELECT DISTINCT POSITION FROM PLAYER;
+   SELECT * FROM PLAYER;
+   SELECT PLAYER_NAME AS 선수명 FROM PLAYER
+   ```
+
+   - SELECT [ALL | DISTINCT] 칼럼1, 칼럼2, ... FROM 테이블명;
+   - ALL : DEFAULT 옵션 (중복 데이터 모두 출력)
+   - DISTINCT : 중복 제거하여 1건으로 출력
+
+6. 산술 연산자
+
+   - NUMBER와 DATE 자료형에 적용, 수학 사칙연산과 동일
+
+7. 합성 연산자 - 문자와 문자를 연결하는 합성 (CONCATENATION) 연산자
+
+   [Oracle] -> ||
+
+   [SQL Server] -> +
+
+
+
+#### 4. TCL (COMMIT, ROLLBACK)
+
+1. TCL
+   - 논리적 작업단위를 묶어 DML에 의해 조작된 결과를 작업단위 별로 제어
+   - DCL로 분류하기도 한다.
+2. 트랜잭션
+   - **데이터베이스의 논리적인 연산 단위**
+   - 트랜잭션에는 하나 이상의 SQL 문장이 포함된다.
+   - 트랜잭션은 밀접히 관련되어 분리될 수 없는 한 개 이상의 DB 조작을 가리킨다.
+   - 분할할 수 없는 최소단위, 전부 적용하거나 전부 취소해야 한다.
+3. 트랜잭션의 특성 (**일원고지**)
+   1. 일관성 : 트랜잭션이 실행되기 전의 데이터베이스 내용이 잘못 되어 있지 않다면, 트랜잭션이 실행된 이후에도 데이터베이스의 내용에 잘못이 있으면 안 된다.
+   2. 원자성 : 트랜잭션에서 정의된 연산들은 모두 성공적으로 실행되던지 아니면 전혀 실행되지 않은 상태로 남아 있어야 한다.
+   3. 고립성 : 트랜잭션이 실행되는 도중에 다른 트랜잭션의 영향을 받아 잘못된 결과를 만들어서는 안된다.
+   4. 지속성 : 트랜잭션이 성공적으로 수행되면 그 트랜잭션이 갱신한 데이터베이스의 내용은 영구적으로 저장된다.
+4. TCL(TRANSACTION CONTROL LANGUAGE)
+   - 커밋 (COMMIT) : 올바르게 반영된 데이터를 데이터베이스에 반영시키는 것
+   - 롤백 (ROLLBACK) : 트랜잭션 시작 이전의 상태로 되돌리는 것
+   - 저장점(SAVEPOINT) : 저장점 기능
+   - 잠금(LOCKING) : 다른 트랜잭션이 동시에 접근하지 못하도록 제한
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
