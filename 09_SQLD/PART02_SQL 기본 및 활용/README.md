@@ -440,12 +440,56 @@
 
    ```markdown
    *낯선 함수들 정리*
-   1. 
+   1. CONCAT(str1, str2) : str1과 str2를 연결
+   2. SIGN(num1) : num1이 양수(return : 1)인지, 음수(return : -1)인지, 0(return : 0)인지 구별한다.
+   3. CEIL/CEILing(num1) : num1보다 크거나 같은 최소 정수를 return
+   4. FLOOR(num1) : num1보다 작거나 같은 최대 정수를 return
+   5. SYSDATE/GETDATE() : 현재 날짜와 시각 출력
+   6. EXTRACT('YEAR'|'MONTH'|'DAY' from d) / DATEPART('YEAR'|'MONTH'|'DAY', d) : 날짜 데이터에서 년/월/일 데이터를 출력 (시간/분/초도 가능)
+   7. NULLIF(str1, str2) : str1과 str2가 같으면 NULL 출력, 다르면 str1 출력
    ```
 
+   ```sql
+   /* CASE 표현 */
+   SELECT ENAME,
+   CASE WHEN SAL >= 3000 THEN 'HIGH' WHEN SAL >= 1000 THEN 'MID' ELSE 'LOW' END
+   AS SALARY_GRADE FROM EMP;
+   ```
+
+   ```sql
+   /* COALESCE(str1, str2, str3, ... )
+   : 인자들을 순서대로 탐색하여 최초의 NULL이 아닌 값을 리턴, 모든 인자가 NULL이라면 NULL을 리턴 */
+   SELECT ENAME, NAME, COALESCE(COMM, SAL) FROM EMP;
+   ```
+
+
+
+#### 7. GROUP BY, HAVING 절
+
+1. 집계함수
+   - 여러 행들의 그룹이 모여서 그룹 당 단 하나의 결과를 돌려주는 다중행 함수
+   - GROUP BY 절은 행들을 소그룹화 한다.
+
+2. GROUP BY 절
+
+   ```sql
+   SELECT [DISTINCT] 칼럼명 [ALIAS명] FROM 테이블명 [WHERE 조건식]
+   [GROUP BY 칼럼이나 표현식] [HAVING 그룹조건식];
+   
+   /* ex) K-리그 선수들의 포지션별 평균 키는 어떻게 되는가? */
+   SELECT ROUND(AVG(HEIGHT),2) FROM PLAYER GROUP BY POSITION;
+   ```
+
+3. HAVING 절
+
+   - WHERE 절과 비슷한 역할을 수행하며, 그룹을 나타내는 결과 집합의 행에 조건이 적용
+   - WHERE 절에는 집계 함수를 사용할 수 없다.
+
    
 
    
+
+
 
 
 
