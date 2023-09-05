@@ -487,7 +487,411 @@
 
    
 
+#### 8. ORDER BY 절
+
+1. ORDER BY 정렬
+
+   - SQL 문장으로 조회된 데이터들을 목적에 맞게 특정 칼럼을 기준으로 정렬하여 출력
+
+2. SELECT 문장의 실행 순서
+
+   > 5. SELECT 칼럼명 [ALIAS명]
+   >
+   > 1. FROM 테이블명
+   >
+   > 2. WHERE 조건식
+   >
+   > 3. GROUP BY 칼럼이나 표현식
+   > 4. HAVING 그룹조건식
+   >
+   > 6. ORDER BY 칼럼이나 표현식;
+
+3. TOP N 쿼리
+   1. ROWNUM
+      - Oracle에서 순위가 높은 N개의 로우를 추출하기 위해 ORDER BY 절과 WHERE 절의 ROWNUM 조건을 같이 사용하는 경우, 이 두 조건으로는 원하는 결과를 얻을 수 없다.
+   2. TOP()
+      - SQL Server는 TOP 조건을 사용하게 되면 별도 처리 없이 관련 ORDER BY 절의 데이터 정렬 후 원하는 일부 데이터만 쉽게 출력
+
+
+
+#### 9. 조인(JOIN)
+
+1. JOIN - 두 개 이상의 테이블들을 연결 / 결합하여 데이터를 출력
+
+   - JOIN은 관계형 데이터베이스의 가장 큰 장점이면서 대표적인 핵심 기능
+   - 일반적인 경우, 행들은 PK나 FK 값의 연관에 의해 JOIN이 성립된다.
+   - 어떤 경우에는 PK, FK 관계가 없어도 논리적인 값들의 연관만으로 JOIN 성립이 가능
+
+   - 하나의 SQL 문장에서 여러 테이블을 조인해서 사용할 수도 있다.
+   - FROM 절에 여러 테이블이 나열되더라도 SQL에서 데이터를 처리할 때는 두 개의 집합 간에만 JOIN이 일어난다.
+   - FROM 절에 A, B, C 3개의 테이블이 나열되었더라도 특정 2개의 테이블만 먼저 조인되고, 그 조인된 새로운 결과 집합과 남은 한 개의 테이블이 다음 차례로 조인
+
+2. EQUI JOIN (등가 조인)
+
+   - 두 테이블의 칼럼 값이 정확하게 일치하는 경우, 대부분 PK ↔ FK 관계 기반
+   - JOIN 조건은 WHERE 절에 기술한다.
+
+   ```sql
+   SELECT table1.칼럼명, table2.칼럼명
+   FROM table1, table2
+   WHERE table1.칼럼명1 = table2.칼럼명2
    
+   SELECT PLAYER.NAME, TEAM.TEAMNAME
+   FROM PLAYER, TEAM
+   WHERE PLAYER.TEAM_ID = TEAM.TEAM_ID;
+   
+   SELECT PLAYER.NAME, TEAM.TEAMNAME
+   FROM PLAYER INNER JOIN TEAM ON PLAYER.TEAM_ID = TEAM.TEAM_ID;
+   ```
+
+- 조인 시 주의사항
+
+  : 조건 절에 테이블에 대한 ALIAS명을 적용하였을 경우, WHERE 절과 SELECT 절에는 테이블 명이 아닌 ALIAS를 사용
+
+3. Non EQUI JOIN (비등가 조인)
+
+   - **두 테이블의 칼럼 값이 일치하지 않는 경우**
+   - Non EQUI JOIN의 경우에는 "=" 연산자가 아닌 다른 연산자들(Between, >, < 등)을 사용하여 JOIN 수행
+
+   ```sql
+   SELECT table1.칼럼명, table2.칼럼명
+   FROM table1, table2
+   WHERE table1.칼럼명1 BETWEEN table2.칼럼명1 AND table2.칼럼명2;
+   
+   SELECT P.PLAYER_NAME, P.POSITION, T.REGION_NAME, T.TEAM_NAME, S.STADIUM_NAME
+   FROM PLAYER P, TEAM T, STADIUM S
+   WHERE P.TEAM_ID = T.TEAM_ID AND T.STADIUM_ID = S.STADIUM_ID
+   ORDER BY 선수명
+   ```
+
+---
+
+
+
+## 제 2장 SQL 활용
+
+#### 1. 표준 조인
+
+1. STANDAR SQL 개요
+
+   1. 표준 SQL의 기능
+      - STANDARD JOIN 기능 추가 (CROSS, OUTER JOIN 등 새로운 FROM 절 JOIN 기능들)
+
+   2. 일반 집합 연산자 -> 현재 SQL
+      - UNION 연산 -> UNION 기능 : 합집합
+      - INTERSECTION 연산 -> INTERSECT 기능 : 교집합
+      - DIFERENCE 연산 -> EXCEPT 기능 : 차집합
+      - PRODUCT 연산 -> CROSS JOIN 기능 : 곱집합(생길 수 있는 모든 데이터 조합)
+   3. 순수 관계 연산자 -> 현재 SQL
+      - SELECT 연산 -> WHERE 절 : 조건에 맞는 행 조회
+      - PROJECT 연산 -> SELECT 절 : 조건에 맞는 칼럼 조회
+      - JOIN 연산 -> 다양한 JOIN 기능 : 여러 조인 존재
+      - DIVIDE 연산은 현재 사용되지 않는다.
+
+2. FROM 절의 JOIN 형태
+
+   - ANSI/ISO SQL에서 표시하는 FROM 절의 JOIN 형태 : INNER JOIN / NATURAL JOIN / USING 조건절 / ON 조건절 / CROSS JOIN / OUTER JOIN
+   - 기존 WHERE 절 그대로 사용 가능
+   - FROM 절에서 JOIN 조건을 명시적으로 정의 가능
+
+3. INNER JOIN - 내부 JOIN
+
+   - JOIN 조건에서 동일한 값이 있는 행만 반환
+   - DEFAULT 옵션이므로 생략이 가능하지만, CROSS JOIN / OUTER JOIN 과는 같이 사용 X
+   - USING 조건절이나 ON 조건절을 필수적으로 사용
+   - 중복 테이블의 경우 별개의 칼럼으로 표시
+
+4. NATURAL JOIN
+
+   - 두 테이블간 동일한 이름을 갖는 모든 칼럼에 대해 EQUI JOIN을 수행
+   - USING, ON, WHERE에서 JOIN을 정의할 수 없다.
+   - JOIN에 사용된 컬럼은 같은 데이터 타입이어야 함
+   - ALIAS나 접두사 붙일 수 없다.
+
+5. USING 조건절
+
+   - FROM 절에 USING 조건절을 이용해서 같은 이름을 가진 칼럼들 중에서 원하는 칼럼에 대해서만 선택적으로 EQUI JOIN을 할 수 있다.
+   - SQL Server에서는 지원하지 않는다.
+   - JOIN 칼럼에 대해서는 ALIAS나 테이블 이름과 같은 접두사를 붙일 수 없다.
+   - JOIN에 사용되는 칼럼은 1개만 표시한다.
+
+6. ON 조건절
+
+   - 칼럼명이 달라도 JOIN 사용 가능
+   - WHERE 검색 조건은 충돌 없이 사용할 수 있다.
+   - ON 조건절에서 사용된 괄호는 옵션사항이다.
+   - **ALIAS 및 테이블명과 같은 접두사를 반드시 사용**
+
+7. CROSS JOIN (= CARTESIAN PRODUCT, CROSS PRODUCT)
+
+   - JOIN 조건이 없는 경우 생길 수 있는 모든 데이터의 조합
+   - JOIN 할 때 적절한 JOIN 조건 칼럼이 없는 경우 사용
+   - 생길 수 있는 모든 데이터 조합을 출력
+   - 결과는 양쪽 집합의 M*N 건의 데이터 조합 발생
+
+8. OUTER JOIN
+
+   - JOIN 조건에서 동일한 값이 없는 행(NULL)도 출력
+   - USING 조건절이나 ON 조건절을 필수로 사용
+   - IN / ON 연산자 사용 시 에러
+   - 표시가 누락된 칼럼이 있을 경우, OUTER JOIN 오류 발생
+
+
+
+#### 2. 집합 연산자
+
+1. 집합 연산자
+
+   - 두 개 이상의 테이블에서 JOIN을 사용하지 않고, 연관된 데이터를 조회하는 방법
+   - 집합 연산자는 2개 이상의 질의 결과를 하나의 결과로 만든다.
+   - SELECT 절의 컬럼 수가 동일해야 하고, 동일 위치 데이터 타입이 상호 호환 가능해야 함
+
+2. 집합 연산자 종류
+
+   | 집합 연산자 | 연산자의 의미                                                |
+   | ----------- | ------------------------------------------------------------ |
+   | UNION       | 여러 개의 SQL 문의 결과에 대한 합집합으로 결과에서 모든 중복된 행은 하나의 행으로 만든다. |
+   | UNION ALL   | 여러 개의 SQL 문의 결과에 대한 합집합으로, 중복된 행도 그대로 결과로 표시된다. 즉, 단순히 결과만 합쳐놓은 것이다. 일반적으로 여러 질의 결과가 상호 배타적일 때 많이 사용한다. 개별 SQL문의 결과가 서로 중복되지 않는 경우, UNION과 결과가 동일하다. (결과의 정렬 순서에는 차이가 있을 수 있음) |
+   | INTERSECT   | 여러 개의 SQL문의 결과에 대한 교집합이다. 중복된 행은 하나의 행으로 만든다. |
+   | EXCEPT      | 앞의 SQL 문의 결과에서 뒤의 SQL 문의 결과에 대한 차집합니다. 중복된 행은 하나의 행으로 만든다. (= MINUS) |
+
+
+
+#### 3. 계층형 질의와 셀프 조인
+
+1. 계층형 질의
+
+   - 계층형 데이터 : 동일 테이블에 계층적으로 상/하위 데이터가 포함된 데이터
+   - 테이블에 계층형 데이터가 존재하는 경우 데이터를 조회하기 위해 사용
+   - 엔터티를 순환관계 데이터 모델로 설계할 경우 계층형 데이터 발생 (조직, 사원, 메뉴 등)
+
+   1. Oracle 계층형 질의
+
+      ```sql
+      SELECT ...
+      FROM table
+      WHERE condition AND condition ...
+      START WITH condition
+      CONNECT BY [NOCYCLE] condition AND condition ...
+      [ORDER SIBLINGS BY column, column, ...]
+      ```
+
+      - START WITH 절 : 레벨의 시작
+      - CONNECT BY 절 : 그 다음에 자식 레벨 지정 (이때 CONNECT BY 절의 조건 만족해야 함)
+      - PRIOR : CONNECT BY 절에 사용되며, 현재 읽은 칼럼을 지정
+      - PRIOR 자식 = 부모 : [부모 -> 자식] 으로 순방향 전개, 리프 = 1
+      - PRIOR 부모 = 자식 : [자식 -> 부모] 로 역방향 전개, 루트 = 1
+      - ORDER SIBLINGS BY : 형제 NODE 위치를 바꿈
+      - NOCYCLE : 이미 나타난 동일한 데이터가 전개 중에 다시 나타나면 이것을 CYCLE 형성이라고 한다. 사이클 발생한 데이터는 런타임 오류 발생 -> NOCYCLE 추가 -> CYCLE 발생 이후 데이터는 전개 X
+
+   2. SQL Server 계층형 질의
+
+      - CTE(Common Table Expression)로 재귀 호출하여 상위부터 하위 방향으로 전개
+
+      ```sql
+      WITH 테이블명_ANCHOR AS
+      ( SELECT 하위칼럼명, 칼럼명, 상위칼럼명, 0 AS LEVEL
+       FROM 테이블명
+       WHERE 상위칼럼명 IS NULL
+       UNION ALL
+       SELECT R.칼럼명, R.칼럼명, R.계층칼럼명, A.LEVEL + 1
+       FROM 테이블명_ANCHOR A, 테이블명 R
+       WHERE A.하위칼럼 = R.상위칼럼 )
+      ```
+
+   3. 셀프 조인
+
+      - 동일 테이블 사이의 조인. 반드시 ALIAS를 사용해야 한다.
+
+      ```sql
+      SELECT ALIAS명1.칼럼명1, ALIAS명2.칼럼명1, ...
+      FROM 테이블명 ALIAS명1, 테이블명 ALIAS명2
+      WHERE ALIAS명1.칼럼명2 = ALIAS명2.칼럼명1
+      ```
+
+
+
+#### 4. 서브쿼리
+
+1. 서브쿼리
+   - 하나의 SQL문 안의 SQL문
+   - 단일행 또는 복수행 비교 연산자와 함께 사용 가능
+   - 서브쿼리에선 ORDER BY 사용 불가 (메인쿼리의 마지막 부분에만 위치 가능)
+   - 서브쿼리는 메인쿼리의 테이블의 칼럼 사용 가능 (메인쿼리에선 서브쿼리의 칼럼 사용 불가)
+
+- SQL 문 안에서 서브쿼리가 사용 가능한 지점
+  - SELECT, FROM, WHERE, HAVING, ORDER BY 절
+  - INSERT 문의 VALUES 절
+  - UPDATE 문의 SET 절
+  - DELETE문 사용 불가
+
+2. 동작방식에 따른 분류
+
+   | 서브쿼리 종류          | 설명                                                         |
+   | ---------------------- | ------------------------------------------------------------ |
+   | Un-Correlated 서브쿼리 | 서브쿼리가 메인쿼리 칼럼을 가지고 있지 않는 형태의 서브쿼리이다. 메인쿼리에 값(서브쿼리가 실행된 결과)을 제공하기 위한 목적으로 주로 사용한다. |
+   | Correlated 서브쿼리    | 서브쿼리가 메인쿼리 칼럼을 가지고 있는 형태의 서브쿼리이다. 일반적으로 메인쿼리가 먼저 수행되어 읽혀진 데이터를 서브쿼리에서 조건이 맞는지 확인하고자 할 때 주로 사용한다. |
+
+3. 반환되는 데이터 형태에 따른 분류
+
+   | 서브쿼리 종류         | 설명                                                         |
+   | --------------------- | ------------------------------------------------------------ |
+   | Single Row 서브쿼리   | 서브쿼리의 실행 결과가 항상 1건 이하인 서브쿼리를 의미한다. 단일 행 서브쿼리는 단일 행 비교 연산자와 함께 사용된다. 단일 행 비교 연산자에는 =, >, < 등이 있다. |
+   | Multi Row 서브쿼리    | 서브쿼리의 실행 결과가 여러 건인 서브쿼리를 의미한다. 다중 행 서브쿼리는 다중 행 비교 연산자와 함께 사용된다. 다중 행 비교 연산자에는 IN, ALL, ANY, SOME, EXISTS(EXIST는 결과를 만족하는 값이 존재하는지 여부를 반환)가 있다. |
+   | Multi Column 서브쿼리 | 서브쿼리의 실행 결과로 여러 칼럼을 반환한다. 메인쿼리의 조건절에 여러 칼럼을 동시에 비교할 수 있다. 서브쿼리와 메인쿼리에서 비교하고자 하는 칼럼 개수와 칼럼의 위치가 동일해야 한다. |
+
+
+
+#### 5. 그룹함수
+
+1. 데이터분석 개요
+   - ANSI/ISO SQL 표준은 데이터 분석을 위해서 다음 세 가지 함수를 정의
+   - 집계, 그룹, 윈도우 함수
+2. ROLLUP 함수
+   - ROLLUP에 지정된 Grouping Columns의 List는 Subtotal을 생성하기 위해 사용한다.
+   - Grouping Columns의 수를 N이라고 했을 때 N+1 level의 Subtotal이 생성
+   - GROUP BY로 묶인 칼럼의 소계 계산, 계층 구조
+   - GROUP BY 칼럼 순서가 바뀌면 결과 값 바뀜
+   - GROUP BY의 확장된 형태
+3. CUBE 함수
+   - 결합 가능한 모든 값에 대한 다차원 집계
+   - GROUP BY CUBE(A) : 전체 합계, 칼럼 A 소계
+   - GROUP BY CUBE(A, B) : 전체 합계, 칼럼 A소계, 칼럼 B소계, 칼럼 (A, B) 조합 소계
+4. GROUPING SETS 함수
+   - 특정 항목에 대한 소계 계산, GROUP BY 칼럼 순서와 무관하게 개별적으로 처리
+   - 내가 보고싶은 것만 소계를 생성
+
+
+
+#### 6. 윈도우 함수
+
+1. 윈도우 함수
+   - 여러 행 간의 관계 정의 함수, 중첩 불가
+2. 윈도우 함수의 종류
+   1. 순위 함수
+      - RANK : 중복 순위 포함
+      - DENSE_RANK : 중복 순위 무시 (중간 순위를 비우지 않음)
+      - ROW_NUMBER : 단순히 행 번호 표시, 값에 무관하게 고유한 순위 부여
+   2. 윈도우 일반 집계 함수
+      - SUM, MAX, MIN, AVG 등
+   3. 행 순서 함수
+      - FIRST_VALUE / LAST_VALUE 함수 : 첫 값 / 끝 값
+      - LAG / LEAD : 이전 값 / 이후 값
+   4. 비율 함수
+      - RATIO_TO_REPORT : 전체 SUM(칼럼)값에 대한 행별 칼럼 값의 백분율을 소수점 반환
+      - PERCENT_RANK : 제일 먼저 나오는 것 0, 제일 늦게 나오는 것 1, 행의 순서별 백분율
+      - CUME_DIST : 전체 건 수에서 현재 행보다 작거나 같은 건 수에 대한 누적 백분율
+      - NTILE : 전체 건수를 ARGUMENT 값으로 N 등분한 결과
+
+
+
+#### 7. DCL
+
+1. DCL
+   - 유저를 생성하거나 권한을 제어하는 명령어, 보안을 위해 필요
+   - GRANT : 권한 부여 (SQL -> GRANT 권한 ON 오브젝트 TO 유저명;)
+   - REVOKE : 권한 제거 (SQL -> REVOKE 권한 ON 오브젝트 TO 유저명;)
+2. 권한
+   - SELECT, INSERT, UPDATE, DELETE, ALTER, ALL : DML 관련 권한
+   - REFERENCES : 지정된 테이블을 참조하는 제약조건을 생성하는 권한
+   - INDEX : 지정된 테이블에서 인덱스를 생성하는 권한
+
+3. ROLE을 이용한 권한 부여
+
+   - 많은 데이터베이스에서 유저들과 권한들 사이에서 중개 역할을 하는 ROLE을 제공
+   - 권한의 집합, 권한을 일일이 부여하지 않고 ROLE로 편리하게 여러 권한을 부여
+   - 시스템 권한, 오브젝트 권한 모두 부여 가능
+   - ROLE은 유저에게 직접 부여하거나 다른 ROLE에 포함되어 유저에게 부여될 수 있다.
+
+4. Oracle에서 제공하는 ROLE 종류
+
+   - CONNECT : CREATE SESSION과 같은 로그인 권한
+   - RESOURCE : CREATE TABLE과 같은 오브젝트(= 리소스) 생성 권한
+
+5. 유저 삭제 명령어와 권한
+
+   - CASCADE 옵션은 해당 유저가 생성한 오브젝트를 먼저 삭제 후 유저를 삭제한다.
+
+6. SQL Server에서 데이터베이스 수준 역할명
+
+   | 서버 수준 역할명 | 설명                                                         |
+   | ---------------- | ------------------------------------------------------------ |
+   | public           | 모든 SQL Server 로그인은 PUBLIC 서버 역할에 속한다. 서버 보안 주체에게 보안 객체에 대한 특정 사용 권한이 부여되지 않았거나 거부된 경우 사용자는 해당 개체에 대해 PUBLIC으로 부여된 사용 권한을 상속 받는다. 모든 사용자가 개체를 사용할 수 있도록 하려는 경우에만 개체에 PUBLIC 권한을 할당해야 한다. |
+   | bulkadmin        | BULK INSERT문을 수행할 수 있다.                              |
+   | dbcreator        | 데이터베이스를 생성, 변경, 삭제 및 복원할 수 있다.           |
+   | diskadmin        | 디스크 파일을 관리하는데 사용된다.                           |
+   | processadmin     | SQL Server의 인스턴스에서 실행중인 프로세스를 종료할 수 있다. |
+   | securityadmin    | 로그인 및 해당 속성을 관리한다. 서버 및 데이터베이스 수준의 사용 권한을 부여, 거부, 취소할 수 있다. 또한, 로그인의 암호를 다시 설정할 수 있다. |
+   | serveradmin      | 서버 차원의 구성 옵션을 변경하고 서버를 종료할 수 있다.      |
+   | setupadmin       | 연결된 서버를 추가하거나 제거할 수 있다.                     |
+   | sysadmin         | 서버에서 모든 작업을 수행할 수 있다.                         |
+
+
+
+#### 8. 절차형 SQL
+
+1. 절차형 SQL
+
+   - 일반적인 개발 언어처럼 절차 지향적인 프로그램을 작성할 수 있도록 DBMS 벤더별로 절차별 SQL 제공
+   - SQL문의 연속적인 실행이나 조건에 따른 분기처리를 이용하여 특정 기능을 수행하는 저장 모듈을 생성
+
+2. PL/SQL (Oracle)
+
+   - Oracle의 PL/SQL은 Block 구조로 되어있고 Block 내에는 DML 문장과 QUERY 문장, 그리고 절차형 언어(IF, LOOP) 등을 사용할 수 있음
+   - 절차적 프로그래밍을 가능하게 하는 트랜잭션 언어
+
+   ```sql
+   CREATE OR REPLACE Procedure 프로시저명 (argument1 mode data_type1, ...) IS AS ...
+   BEGIN ...
+   EXCEPTION ...
+   END;
+   ```
+
+3. T-SQL (SQL Server)
+
+   - T-SQL은 근본적으로 SQL Server를 제어하기 위한 언어
+   - MS 사에서 ANSI/ISO 표준의 SQL에 약간의 기능을 더 추가해 보완
+
+   - 변수 선언 기능 : @@ - 전역 변수, @ - 지역변수
+
+   ```sql
+   CREATE Procedure 스키마명.프로시저명 @parameter1 data_type1 mode, ...
+   WITH AS ...
+   BEGIN ...
+   ERROR 처리 ...
+   END;
+   ```
+
+4. 프로시저(Procedure)
+   - 주로 DML을 사용해 주기적으로 진행해야 되는 작업을 저장
+   - 별도의 호출을 통해 실행
+   - CREATE OR REPLACE PROCEDURE 문으로 프로시저를 생성
+5. 사용자 정의 함수(User Defined Function)
+   - 절차형 SQL을 로직과 함께 DB 내에 저장해 놓은 명령문 집합
+   - RETURN을 통해 반드시 하나의 값 반환 (프로시저는 DB에 저장)
+6. 트리거 (Trigger)
+   - DML 문이 수행되었을 때 자동으로 동작하는 프로그램(프로시저는 EXCUTE로 실행)
+   - DCL과 TCL 사용불가(프로시저는 사용 가능)
+   - 데이터의 무결성과 일관성을 위해서 사용
+   - Trigger는 데이터베이스 보안의 적용, 유효하지 않은 트랜잭션의 예방, 업무 규칙 자동 적용 등에 사용
+
+7. 프로시저와 트리거의 차이
+   - 프로시저는 BEGIN ~ END절 내에 COMMIT, ROLLBACK 과 같은 트랜잭션 종료 명령어 사용
+   - 데이터베이스 트리거는 BEGIN ~ END 절 내에 사용할 수 없다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
