@@ -51,3 +51,21 @@
 >
 > IN 문은 OR 조건, NOT IN 문은 AND 조건
 
+#### 38. 테이블 TEST38 에서 UNIQUE INDEX SCAN 을 수행할 수 없는 경우는 무엇인가?
+
+![image-20230909000535723](README.assets/image-20230909000535723.png)
+
+> TEST38 테이블은 기본키(Primary Key) 가 KEY1번과 KEY2번으로 이루어져 있다. 따라서 UNIQUE INDEX SCAN을 하려면 KEY1번과 KEY2번 모두 사용되어야 한다. 따라서 4번의 경우 KEY1번만 사용되었기 때문에 UNIQUE SCAN이 되지 않는다.
+
+#### 40. 주어진 SQL 문에서 ORDER BY로 사용할 수 없는 것은?
+
+![image-20230909001502375](README.assets/image-20230909001502375.png)
+
+> SELECT 구에 2개의 칼럼이 있으므로 3번째 칼럼은 없기 때문에
+
+
+
+> NULLS LAST : NULL 값을 마지막에 정렬시킨다.
+
+## .
+
