@@ -13,3 +13,4 @@ console.log(name);
 console.log(jinUk);
 let jinUk = '진욱';
 const jinUk2 = '진욱';
+
